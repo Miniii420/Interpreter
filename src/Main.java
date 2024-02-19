@@ -12,7 +12,7 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         Parser parser = new Parser();
 
-        //*
+        /*
         List<Lexer.Token> tokens = Lexer.tokenize("42 * (2 + 3)");
         if (tokens != null) {
             for (Lexer.Token token : tokens) {
@@ -20,19 +20,19 @@ public class Main {
             }
         }
         System.out.println("\n");
-        //*/
+        /*/
 
-        //*
+        /*
         Program pro = parser.produceAST("42 * (2 + 3)");
         System.out.println(pro);
         System.out.println("\n");
-        //*/
+        /*/
 
-        //*
+        /*
         RuntimeVal rv = Interpreter.evaluate(pro);
         System.out.println(rv);
         System.out.println("\n");
-        //*/
+        /*/
 
         /*
         System.out.println("\nRepl v0.1");
