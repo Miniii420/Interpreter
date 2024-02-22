@@ -1,16 +1,8 @@
 package frontend;
 
+import frontend.AST.*;
 import frontend.Lexer.Token;
 import frontend.Lexer.TokenType;
-
-import frontend.AST.NodeType;
-import frontend.AST.Stmt;
-import frontend.AST.Program;
-import frontend.AST.Expr;
-import frontend.AST.BinaryExpr;
-import frontend.AST.Identifier;
-import frontend.AST.NumericLiteral;
-import frontend.AST.NullLiteral;
 
 
 import java.util.ArrayList;
@@ -55,13 +47,51 @@ public class Parser {
     }
 
     private Stmt parseStmt() {
-        // Skip to parseExpr
-        return parseExpr();
+        switch (at().getType()) {
+            case Let:
+            case Const:
+                return parseVarDeclaration();
+            default:
+                return parseExpr();
+        }
+    }
+
+    private Stmt parseVarDeclaration() {
+        boolean isConstant = eat().getType() == TokenType.Const;
+        String identifier = expect(TokenType.Identifier, "Expected Identifier name following Let or const Keyword.").getValue();
+
+        if (at().getType() == TokenType.Semicolon) {
+            eat();
+            if (isConstant) {
+                throw new RuntimeException("Must assign value to constant expression. No value provided.");
+            }
+            return new VarDeclaration(false, identifier, null);
+        }
+
+        expect(TokenType.Equals, "Expected equals token following identifier in var declaration.");
+        Expr value = parseExpr();
+        VarDeclaration declaration = new VarDeclaration(isConstant, identifier, value);
+
+        expect(TokenType.Semicolon, "Variable Declaration statement must end with semicolon.");
+        return declaration;
     }
 
     private Expr parseExpr() {
-        return parseAdditiveExpr();
+        return parseAssignmentExpr();
     }
+
+    private Expr parseAssignmentExpr() {
+        Expr left = parseAdditiveExpr();
+
+        if (at().getType() == TokenType.Equals) {
+            eat();
+            Expr value = parseAssignmentExpr();
+            return new AssignmentExpr(left, value);
+        }
+
+        return left;
+    }
+
 
     private Expr parseAdditiveExpr() {
         Expr left = parseMultiplicativeExpr();
@@ -91,9 +121,6 @@ public class Parser {
         switch (tk) {
             case Identifier:
                 return new Identifier(eat().getValue());
-            case Null:
-                eat(); // Advance past null keyword
-                return new NullLiteral();
             case Number:
                 return new NumericLiteral(Double.parseDouble(eat().getValue()));
             case OpenParen:

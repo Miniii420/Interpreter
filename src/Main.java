@@ -1,7 +1,9 @@
 import frontend.AST.Program;
 import frontend.Lexer;
 import frontend.Parser;
+import runtime.Environment;
 import runtime.Interpreter;
+import runtime.Values.NumberVal;
 import runtime.Values.RuntimeVal;
 
 import java.util.List;
@@ -34,8 +36,10 @@ public class Main {
         System.out.println("\n");
         /*/
 
-        /*
+
         System.out.println("\nRepl v0.1");
+
+        Environment env = new Environment();
 
         while (true) {
             System.out.print("> ");
@@ -46,10 +50,11 @@ public class Main {
                 System.exit(0);
             }
 
+
             Program program = parser.produceAST(input);
-            RuntimeVal result = Interpreter.evaluate(program);
+            RuntimeVal result = Interpreter.evaluate(program, env);
             System.out.println(result);
         }
-        */
+        //*/
     }
 }

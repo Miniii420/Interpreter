@@ -12,8 +12,10 @@ public class Lexer {
         Number,
         Identifier,
         Let,
+        Const,
         BinaryOperator,
         Equals,
+        Semicolon,
         OpenParen,
         CloseParen,
         EOF // End of File
@@ -23,7 +25,7 @@ public class Lexer {
 
     static {
         KEYWORDS.put("let", TokenType.Let);
-        KEYWORDS.put("null", TokenType.Null);
+        KEYWORDS.put("const", TokenType.Const);
     }
 
     public static class Token {
@@ -90,6 +92,9 @@ public class Lexer {
                     break;
                 case '=':
                     tokens.add(token(String.valueOf(currentChar), TokenType.Equals));
+                    break;
+                case ';':
+                    tokens.add(token(String.valueOf(currentChar), TokenType.Semicolon));
                     break;
                 default:
                     if (isInt(currentChar)) {

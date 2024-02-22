@@ -2,7 +2,7 @@ package runtime.Values;
 
 public class NullVal implements RuntimeVal {
     private final ValueType type = ValueType.NULL;
-    private final String value = "null";
+    private final String value = null;
 
     @Override
     public ValueType getType() {
@@ -17,4 +17,6 @@ public class NullVal implements RuntimeVal {
     public String toString() {
         return "NullVal{type=" + type + ", value='" + value + "'}";
     }
+
+
 }

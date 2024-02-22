@@ -21,4 +21,6 @@ public class NumberVal implements RuntimeVal {
     public String toString() {
         return "NumberVal{type=" + type + ", value=" + value + "}";
     }
+
+
 }
