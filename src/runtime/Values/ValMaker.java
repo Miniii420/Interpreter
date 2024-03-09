@@ -2,13 +2,17 @@ package runtime.Values;
 
 public class ValMaker {
 
-    public NumberVal MK_NUMBER(double n){
+    public static RuntimeVal MK_NUMBER(double n){
         return new NumberVal(n);
     }
-    public static NullVal MK_NULL(){
+    public static RuntimeVal MK_NULL(){
         return new NullVal();
     }
-    public BoolVal MK_BOOL(boolean b){
+    public static RuntimeVal MK_BOOL(boolean b){
         return new BoolVal(b);
+    }
+
+    public static NativeFnVal MK_NATIVE_FN(FunctionCall call) {
+        return new NativeFnVal(call);
     }
 }

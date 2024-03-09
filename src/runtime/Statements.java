@@ -1,13 +1,8 @@
 package runtime;
 
-import frontend.AST.Expr;
-import frontend.AST.Program;
-import frontend.AST.Stmt;
-import frontend.AST.VarDeclaration;
-import runtime.Environment;
-import runtime.Interpreter;
-import runtime.Values.RuntimeVal;
-import runtime.Values.NullVal;
+import frontend.AST.*;
+
+import runtime.Values.*;
 import runtime.Values.ValMaker;
 
 public class Statements {
@@ -26,4 +21,16 @@ public class Statements {
 
         return env.declareVar(declaration.getIdentifier(), (RuntimeVal) value, declaration.isConstant());
     }
+
+    public static RuntimeVal evalFunctionDeclaration(FunctionDeclaration declaration, Environment env) {
+        FunctionVal fn = new FunctionVal(
+                declaration.getName(),
+                declaration.getParameters(),
+                env,
+                declaration.getBody()
+        );
+
+        return env.declareVar(declaration.getName(), fn, true);
+    }
+
 }

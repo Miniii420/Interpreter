@@ -1,16 +1,15 @@
 package runtime;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import runtime.Values.RuntimeVal;
 
+import static runtime.Values.ValMaker.*;
+
 public class Environment {
-    private Environment parent;
-    private Map<String, RuntimeVal> variables;
-    private Set<String> constants;
+    private final Environment parent;
+    private final Map<String, RuntimeVal> variables;
+    private final Set<String> constants;
 
     public Environment() {
         this.parent = null;
@@ -23,13 +22,37 @@ public class Environment {
         this.constants = new HashSet<>();
     }
 
+    public static Environment createGlobalEnv() {
+        Environment env = new Environment();
+        env.declareVar("true", MK_BOOL(true), true);
+        env.declareVar("false", MK_BOOL(false), true);
+        env.declareVar("null", MK_NULL(), true);
+
+        env.declareVar(
+                "print",
+                MK_NATIVE_FN((args, _scope) -> {
+                    System.out.println(Arrays.toString(args));
+                    return MK_NULL();
+                }),
+                true
+        );
+
+        env.declareVar(
+                "time",
+                MK_NATIVE_FN((_args, _scope) -> {
+                    return MK_NUMBER(System.currentTimeMillis());
+                }),
+                true
+        );
+        return env;
+    }
+
     public RuntimeVal declareVar(String varname, RuntimeVal value, boolean constant) {
         if (this.variables.containsKey(varname)) {
             throw new RuntimeException("Cannot declare variable " + varname + ". As it is already defined.");
         }
 
         this.variables.put(varname, value);
-        System.out.println(this.variables.toString());
         if (constant) {
             this.constants.add(varname);
         }

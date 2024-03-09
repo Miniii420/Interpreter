@@ -1,46 +1,41 @@
-import frontend.AST.Program;
-import frontend.Lexer;
+import frontend.AST.*;
 import frontend.Parser;
 import runtime.Environment;
-import runtime.Interpreter;
-import runtime.Values.NumberVal;
-import runtime.Values.RuntimeVal;
 
-import java.util.List;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Scanner;
+
+import static runtime.Environment.createGlobalEnv;
+import static runtime.Interpreter.evaluate;
 
 public class Main {
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
+        String filename = "src/test.txt";
+        run(filename);
+    }
+
+    public static void run(String filename) {
         Parser parser = new Parser();
+        Environment env = createGlobalEnv();
+        // Create Default Global Environment
 
-        /*
-        List<Lexer.Token> tokens = Lexer.tokenize("42 * (2 + 3)");
-        if (tokens != null) {
-            for (Lexer.Token token : tokens) {
-                System.out.println(token.value + " : " + token.type);
-            }
+        try {
+            String input = Files.readString(Paths.get(filename));
+            Program program = parser.produceAST(input);
+            evaluate(program, env);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        System.out.println("\n");
-        /*/
+    }
 
-        /*
-        Program pro = parser.produceAST("42 * (2 + 3)");
-        System.out.println(pro);
-        System.out.println("\n");
-        /*/
-
-        /*
-        RuntimeVal rv = Interpreter.evaluate(pro);
-        System.out.println(rv);
-        System.out.println("\n");
-        /*/
-
+    public static void repl() {
+        Parser parser = new Parser();
+        Environment env = createGlobalEnv();
 
         System.out.println("\nRepl v0.1");
-
-        Environment env = new Environment();
-
+        Scanner scanner = new Scanner(System.in);
         while (true) {
             System.out.print("> ");
             String input = scanner.nextLine();
@@ -50,11 +45,9 @@ public class Main {
                 System.exit(0);
             }
 
-
             Program program = parser.produceAST(input);
-            RuntimeVal result = Interpreter.evaluate(program, env);
-            System.out.println(result);
+            System.out.println(program); // Print the AST node
+            evaluate(program, env);
         }
-        //*/
     }
 }

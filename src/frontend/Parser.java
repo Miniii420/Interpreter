@@ -3,12 +3,12 @@ package frontend;
 import frontend.AST.*;
 import frontend.Lexer.Token;
 import frontend.Lexer.TokenType;
-
+import static frontend.Lexer.tokenize;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static frontend.Lexer.tokenize;
+
 
 public class Parser {
     private List<Token> tokens = new ArrayList<>();
@@ -51,9 +51,149 @@ public class Parser {
             case Let:
             case Const:
                 return parseVarDeclaration();
+            case Fn:
+                return parseFnDeclaration();
             default:
                 return parseExpr();
         }
+    }
+
+    private Stmt parseFnDeclaration() {
+        eat();
+        Token nameToken = expect(TokenType.Identifier, "unexpected Functionname following fn keyword");
+        String name = nameToken.getValue();
+
+        List<Expr> args = parseArgs();
+
+        List<String> params = new ArrayList<>();
+        for (Expr arg : args) {
+            if (arg.getKind() != NodeType.Identifier){
+                System.out.println(arg);
+                throw new RuntimeException("Inside function declaration expected parameters to be of type string.");
+            }
+            params.add(((Identifier) arg).getValue());
+        }
+
+        expect(TokenType.OpenBrace, "Expected Open brace following Parameters / Expected function body following declaration");
+
+        List<Stmt> body = new ArrayList<>();
+        while (at().getType() != TokenType.EOF && at().getType() != TokenType.CloseBrace) {
+            body.add(parseStmt());
+        }
+
+        expect(TokenType.CloseBrace, "Closing Brace following Function body");
+
+        return new FunctionDeclaration(params, name, body);
+    }
+
+    private Expr parseObjectExpr() {
+        if (at().getType() != TokenType.OpenBrace) {
+            return parseAdditiveExpr();
+        }
+
+        eat();
+        List<Property> properties = new ArrayList<>();
+
+        while (notEof() && at().getType() != TokenType.CloseBrace) {
+            Token keyToken = expect(TokenType.Identifier, "Object Literal Key expected.");
+            String key = keyToken.getValue();
+
+            // Allows shorthand key: pair -> { key, }
+            if (at().getType() == TokenType.Comma) {
+                eat();
+                properties.add(new Property(key, null));
+                continue;
+            }
+            // Allows shorthand key: pair -> { key }
+            else if (at().getType() == TokenType.CloseBrace) {
+                properties.add(new Property(key, null));
+                continue;
+            }
+
+            // { key : val }
+            expect(TokenType.Colon, "Missing Colon following Identifier in ObjectExpr");
+            Expr value = parseExpr();
+
+            properties.add(new Property(key, value));
+            if (at().getType() != TokenType.CloseBrace) {
+                expect(TokenType.Comma, "Expected Comma or Closing Bracket following Property");
+            }
+        }
+
+        expect(TokenType.CloseBrace, "Object Literal missing Closing brace.");
+        return new ObjectLiteral(properties);
+    }
+
+
+    private Expr parseMemberExpr() {
+        Expr object = parsePrimaryExpr();
+
+        while (at().getType() == TokenType.Dot || at().getType() == TokenType.OpenBracket) {
+            Token operator = eat();
+            Expr property;
+            boolean computed;
+
+            if (operator.getType() == TokenType.Dot) {
+                computed = false;
+                property = parsePrimaryExpr();
+
+                if (property.getKind() != NodeType.Identifier) {
+                    throw new RuntimeException("Cannot use dot operator without right hand side being an identifier");
+                }
+            } else {
+                computed = true;
+                property = parseExpr();
+                expect(TokenType.CloseBracket, "Missing closing bracket in computed value");
+            }
+
+            object = new MemberExpr(object, property, computed);
+        }
+
+        return object;
+    }
+    private Expr parseCallMemberExpr() {
+        Expr member = parseMemberExpr();
+
+        if (at().getType() == TokenType.OpenParen) {
+            return parseCallExpr(member);
+        }
+
+        return member;
+    }
+
+    private Expr parseCallExpr(Expr caller) {
+        CallExpr callExpr = new CallExpr(parseArgs(), caller);
+
+        if (at().getType() == TokenType.OpenParen) {
+            callExpr = (CallExpr) parseCallExpr(caller);
+        }
+
+        return callExpr;
+    }
+
+    private List<Expr> parseArgumentsList() {
+        List<Expr> args = new ArrayList<>();
+        args.add(parseAssignmentExpr());
+
+        while (at().getType() == TokenType.Comma && eat() != null) {
+            args.add(parseAssignmentExpr());
+        }
+
+        return args;
+    }
+    private List<Expr> parseArgs() {
+        expect(TokenType.OpenParen, "Expected Open Paren");
+
+        List<Expr> args;
+        if (at().getType() == TokenType.CloseParen) {
+            args = new ArrayList<>();
+        } else {
+            args = parseArgumentsList();
+        }
+
+        expect(TokenType.CloseParen, "Missing Closing Paren inside arguments list");
+
+        return args;
     }
 
     private Stmt parseVarDeclaration() {
@@ -81,7 +221,7 @@ public class Parser {
     }
 
     private Expr parseAssignmentExpr() {
-        Expr left = parseAdditiveExpr();
+        Expr left = parseObjectExpr();
 
         if (at().getType() == TokenType.Equals) {
             eat();
@@ -105,11 +245,11 @@ public class Parser {
     }
 
     private Expr parseMultiplicativeExpr() {
-        Expr left = parsePrimaryExpr();
+        Expr left = parseCallMemberExpr();
 
         while (at().getValue().equals("*") || at().getValue().equals("/") || at().getValue().equals("%")) {
             String operator = eat().getValue();
-            Expr right = parsePrimaryExpr();
+            Expr right = parseCallMemberExpr();
             left = new BinaryExpr(left, right, operator);
         }
         return left;

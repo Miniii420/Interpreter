@@ -1,6 +1,6 @@
 package runtime.Values;
 
-public class BoolVal {
+public class BoolVal implements RuntimeVal{
     private final ValueType type = ValueType.Boolean;
     private final boolean value;
 

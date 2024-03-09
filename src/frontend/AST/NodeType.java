@@ -1,11 +1,16 @@
 package frontend.AST;
 
 public enum NodeType {
-    Program,
-    VarDeclaration,
-    NumericLiteral,
-    NullLiteral,
-    Identifier,
-    BinaryExpr,
-    AssignmentExpr
+    Program, //y
+    VarDeclaration, //y
+    FunctionDeclaration, //
+    AssignmentExpr, //y
+    MemberExpr, //y
+    CallExpr, //y
+    Property, //
+    ObectLiteral, //
+    NumericLiteral, //y
+    Identifier, // y
+    BinaryExpr, //y
+
 }

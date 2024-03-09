@@ -8,17 +8,24 @@ import java.util.Map;
 public class Lexer {
 
     public enum TokenType {
-        Null,
         Number,
         Identifier,
         Let,
         Const,
+        Fn,
         BinaryOperator,
-        Equals,
-        Semicolon,
-        OpenParen,
-        CloseParen,
-        EOF // End of File
+        Equals, // =
+        Comma, // ,
+        Dot, // .
+        Colon, // :
+        Semicolon, // ;
+        OpenParen, // (
+        CloseParen, // )
+        OpenBrace, // {
+        CloseBrace, // }
+        OpenBracket, // [
+        CloseBracket, // ]
+        EOF, // End of File
     }
 
     private static final Map<String, TokenType> KEYWORDS = new HashMap<>();
@@ -26,6 +33,7 @@ public class Lexer {
     static {
         KEYWORDS.put("let", TokenType.Let);
         KEYWORDS.put("const", TokenType.Const);
+        KEYWORDS.put("fn" ,TokenType.Fn);
     }
 
     public static class Token {
@@ -67,7 +75,7 @@ public class Lexer {
     }
 
     public static boolean isSkippable(char c) {
-        return c == ' ' || c == '\t' || c == '\n';
+        return c == ' ' || c == '\t' || c == '\n' || c == '\r';
     }
 
     public static List<Token> tokenize(String sourceCode) {
@@ -83,6 +91,18 @@ public class Lexer {
                 case ')':
                     tokens.add(token(String.valueOf(currentChar), TokenType.CloseParen));
                     break;
+                case '{':
+                    tokens.add(token(String.valueOf(currentChar), TokenType.OpenBrace));
+                    break;
+                case '}':
+                    tokens.add(token(String.valueOf(currentChar), TokenType.CloseBrace));
+                    break;
+                case '[':
+                    tokens.add(token(String.valueOf(currentChar), TokenType.OpenBracket));
+                    break;
+                case ']':
+                    tokens.add(token(String.valueOf(currentChar), TokenType.CloseBracket));
+                    break;
                 case '+':
                 case '-':
                 case '*':
@@ -95,6 +115,15 @@ public class Lexer {
                     break;
                 case ';':
                     tokens.add(token(String.valueOf(currentChar), TokenType.Semicolon));
+                    break;
+                case ':':
+                    tokens.add(token(String.valueOf(currentChar), TokenType.Colon));
+                    break;
+                case ',':
+                    tokens.add(token(String.valueOf(currentChar), TokenType.Comma));
+                    break;
+                case '.':
+                    tokens.add(token(String.valueOf(currentChar), TokenType.Dot));
                     break;
                 default:
                     if (isInt(currentChar)) {

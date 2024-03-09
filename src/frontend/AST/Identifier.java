@@ -13,7 +13,7 @@ public class Identifier implements Expr {
         return kind;
     }
 
-    public String getSymbol() {
+    public String getValue() {
         return symbol;
     }
 
